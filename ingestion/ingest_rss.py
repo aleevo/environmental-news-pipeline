@@ -2,7 +2,7 @@ import os
 import feedparser
 import pandas as pd
 import polars as pl
-from datetime import datetime
+from datetime import datetime, timezone
 from azure.storage.blob import BlobServiceClient
 import io
 from dotenv import load_dotenv
@@ -12,22 +12,19 @@ load_dotenv()
 
 # --- CONFIGURATION ---
 AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-
 if not AZURE_CONNECTION_STRING:
-    print("❌ ERROR: AZURE_STORAGE_CONNECTION_STRING is missing!")
+    print(" ERROR: AZURE_STORAGE_CONNECTION_STRING is missing!")
     exit(1)
 
 CONTAINER_NAME = "primary" 
 
 # --- 1. THE 10 SOURCES ---
 RSS_FEEDS = {
-    # Working EEA URL from your test
     "eea": "https://www.eea.europa.eu/en/newsroom/newsletter/eea-press-releases-rss-feed/rss.xml",
     "ec_eu": "https://environment.ec.europa.eu/node/686/rss_en",
     "clean_energy_wire": "https://www.cleanenergywire.org/rss.xml",
     "dw": "https://rss.dw.com/xml/rss_en_environment",
     "dialogue_earth": "https://dialogue.earth/en/feed/",
-    # Replaced SCMP with CGTN China
     "cgtn_china": "https://www.cgtn.com/subscribe/rss/section/china.xml", 
     "carbon_brief": "https://www.carbonbrief.org/feed",
     "mongabay": "https://news.mongabay.com/feed/",
@@ -57,7 +54,7 @@ def fetch_articles():
     for source_name, url in RSS_FEEDS.items():
         print(f"Fetching from {source_name}...")
         try:
-            # We use feedparser with the agent parameter
+            # Use feedparser with the agent parameter
             feed = feedparser.parse(url, agent=headers["User-Agent"])
             
             if feed.bozo == 1 and len(feed.entries) == 0:
@@ -69,17 +66,24 @@ def fetch_articles():
                 summary = entry.get("summary", entry.get("description", ""))
                 
                 # --- FILTERING LOGIC ---
-                # If the source is CGTN, only keep it if it mentions environmental keywords
                 if source_name == "cgtn_china" and not is_environmental(title, summary):
-                    continue # Skip this article
+                    continue 
+
+                # --- DATE PARSING LOGIC ---
+                if hasattr(entry, 'published_parsed') and entry.published_parsed:
+                    # Convert the parsed time struct to a timezone-aware ISO string
+                    pub_date = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc).isoformat()
+                else:
+                    # Fallback if the feed has no published date
+                    pub_date = datetime.now(timezone.utc).isoformat()
 
                 articles.append({
                     "source": source_name,
                     "title": title,
                     "summary": summary,
                     "clean_url": entry.get("link", ""),
-                    "published_at": entry.get("published", datetime.now().isoformat()),
-                    "ingested_at": datetime.now().isoformat()
+                    "published_at": pub_date,
+                    "ingested_at": datetime.now(timezone.utc).isoformat() 
                 })
         except Exception as e:
             print(f"  [Error] Could not fetch {source_name}: {e}")
@@ -103,7 +107,7 @@ def upload_to_azure(df):
     # --- 3. PARTITIONING FOR SYNAPSE ---
     blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
     
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     current_time_str = now.strftime("%H%M%S")
     
     # Create the Hive-style partition path
@@ -113,7 +117,7 @@ def upload_to_azure(df):
     
     print(f"Uploading to Azure Storage as: {blob_name}...")
     blob_client.upload_blob(parquet_buffer.getvalue(), overwrite=True)
-    print("✅ Upload successful!")
+    print(" Upload successful!")
 
 if __name__ == "__main__":
     print("Starting ingestion...")
