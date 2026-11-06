@@ -1,0 +1,11 @@
+services:
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    env_file:
+      - .env
+
+    network_mode: bridge
+

@@ -58,6 +58,9 @@ def fetch_articles():
             
             if feed.bozo == 1 and len(feed.entries) == 0:
                 print(f"  [Warning] Failed to parse feed for {source_name}.")
+                print(f"  Parser error: {feed.bozo_exception}")
+                print(f"  HTTP status: {feed.get('status', 'Not available')}")
+                print(f"  Feed URL: {feed.get('href', url)}")
                 continue
 
             for entry in feed.entries:
