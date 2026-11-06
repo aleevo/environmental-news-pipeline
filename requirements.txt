@@ -1,6 +1,4 @@
 python-dotenv
 feedparser
-pandas
 polars
 azure-storage-blob
-pyarrow

@@ -1,6 +1,5 @@
 import os
 import feedparser
-import pandas as pd
 import polars as pl
 from datetime import datetime, timezone
 from azure.storage.blob import BlobServiceClient
@@ -89,20 +88,17 @@ def fetch_articles():
             print(f"  [Error] Could not fetch {source_name}: {e}")
             
     print(f"\nTotal articles fetched: {len(articles)}")
-    return pd.DataFrame(articles)
+    return pl.DataFrame(articles)
 
 def upload_to_azure(df):
-    if df.empty:
+    if df.is_empty():
         print("No data to upload. Exiting.")
         return
 
     # --- 2. POLARS TRANSFORMATION ---
-    print("Converting to Polars and preparing Parquet...")
-    pl_df = pl.from_pandas(df)
-    
-    # Write to an in-memory buffer using Polars
+    print("Preparing Parquet with Polars...")
     parquet_buffer = io.BytesIO()
-    pl_df.write_parquet(parquet_buffer)
+    df.write_parquet(parquet_buffer)
     
     # --- 3. PARTITIONING FOR SYNAPSE ---
     blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
@@ -119,8 +115,9 @@ def upload_to_azure(df):
     blob_client.upload_blob(parquet_buffer.getvalue(), overwrite=True)
     print(" Upload successful!")
 
+
 if __name__ == "__main__":
     print("Starting ingestion...")
-    pandas_df = fetch_articles()
-    upload_to_azure(pandas_df)
+    polars_df = fetch_articles()
+    upload_to_azure(polars_df)
 
