@@ -1,0 +1,16 @@
+
+.git
+.github
+.env
+**/.env
+
+__pycache__/
+*.py[cod]
+
+venv/
+env/
+env_news_dbt/
+
+logs/
+dbt_project/
+orchestration/
