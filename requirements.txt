@@ -2,3 +2,4 @@ python-dotenv
 feedparser
 polars
 azure-storage-blob
+kafka-python

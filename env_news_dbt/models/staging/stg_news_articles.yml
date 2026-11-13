@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_news_articles
+    description: "Cleaned and standardized environmental news articles."
+
+    columns:
+      - name: title
+        description: "Title of the news article."
+        data_tests:
+          - not_null
+
+      - name: clean_url
+        description: "Cleaned URL identifying the article."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: published_date
+        description: "Standardized publication date."
+        data_tests:
+          - not_null

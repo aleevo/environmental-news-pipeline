@@ -1,0 +1,38 @@
+
+version: 2
+
+models:
+  - name: fct_news_articles
+    description: "Reporting-ready environmental news articles."
+
+    columns:
+      - name: clean_url
+        description: "Unique URL identifying each article."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: title
+        description: "News article headline."
+        data_tests:
+          - not_null
+
+      - name: source_category
+        description: "Classification of the news publisher."
+        data_tests:
+          - not_null
+
+      - name: published_date
+        description: "Standardized publication date."
+        data_tests:
+          - not_null
+
+      - name: publication_year
+        description: "Year of publication."
+        data_tests:
+          - not_null
+
+      - name: publication_month
+        description: "Month of publication."
+        data_tests:
+          - not_null

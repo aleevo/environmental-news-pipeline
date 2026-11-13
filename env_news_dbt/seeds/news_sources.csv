@@ -1,0 +1,11 @@
+source_normalized,publisher_name,publisher_base_country,publisher_base_continent,source_category
+mongabay,Mongabay,United States,North America,environmental_journalism
+sciencedaily,ScienceDaily,United States,North America,science_news
+nasa,NASA,United States,North America,government_science_agency
+ec_eu,European Commission,Belgium,Europe,government_environmental_organization
+eea,European Environment Agency,Denmark,Europe,government_environmental_organization
+dw,Deutsche Welle,Germany,Europe,international_news_media
+cgtn_china,CGTN,China,Asia,international_news_media
+carbon_brief,Carbon Brief,United Kingdom,Europe,climate_journalism
+dialogue_earth,Dialogue Earth,United Kingdom,Europe,environmental_journalism
+clean_energy_wire,Clean Energy Wire,Germany,Europe,energy_journalism

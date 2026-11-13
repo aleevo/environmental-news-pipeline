@@ -1,0 +1,38 @@
+
+version: 2
+
+models:
+  - name: int_news_articles
+    description: "Analysis-ready environmental news articles."
+
+    columns:
+      - name: clean_url
+        description: "Unique cleaned URL identifying each article."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: source_category
+        description: "Classification of the news publisher."
+        data_tests:
+          - not_null
+
+      - name: publication_year
+        description: "Year in which the article was published."
+        data_tests:
+          - not_null
+
+      - name: publication_month
+        description: "Month in which the article was published."
+        data_tests:
+          - not_null
+
+      - name: article_age_days
+        description: "Number of days between publication and today."
+        data_tests:
+          - not_null
+
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "article_age_days >= 0"

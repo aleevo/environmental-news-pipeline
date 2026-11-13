@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: landing
+    schema: dlt_landing
+    tables:
+      - name: news_articles
+

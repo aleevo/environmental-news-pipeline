@@ -11,9 +11,6 @@ load_dotenv()
 
 # --- CONFIGURATION ---
 AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-if not AZURE_CONNECTION_STRING:
-    print(" ERROR: AZURE_STORAGE_CONNECTION_STRING is missing!")
-    exit(1)
 
 CONTAINER_NAME = "primary" 
 
@@ -34,11 +31,12 @@ RSS_FEEDS = {
 # Keywords to filter CGTN (and only CGTN, since it's general news)
 ENV_KEYWORDS = [
     "environment", "climate", "pollution", "solar energy", "green", 
-    "sustainability", "carbon emissions", "conservation", "wind energy", # <-- Fixed!
+    "sustainability", "carbon emissions", "conservation", "wind energy", 
     "wildlife", "water", "renewable energy", "ecosystem", "biodiversity"
 ]
 
-def is_environmental(title, summary):
+def is_environmental(title, summary):q
+
     """Helper function to check if an article is about the environment."""
     # Combine title and summary, make it lowercase for matching
     text_to_check = (title + " " + summary).lower()
@@ -98,6 +96,10 @@ def upload_to_azure(df):
         print("No data to upload. Exiting.")
         return
 
+    if not AZURE_CONNECTION_STRING:
+        raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is missing!")
+
+
     # --- 2. POLARS TRANSFORMATION ---
     print("Preparing Parquet with Polars...")
     parquet_buffer = io.BytesIO()
@@ -107,7 +109,7 @@ def upload_to_azure(df):
     blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
     
     now = datetime.now(timezone.utc)
-    current_time_str = now.strftime("%H%M%S")
+    current_time_str = now.strftime("%H%M%S_%f")
     
     # Create the Hive-style partition path
     blob_name = f"raw_news/year={now.year}/month={now.month:02d}/day={now.day:02d}/news_batch_{current_time_str}.parquet"
